@@ -1,21 +1,17 @@
-time-machine-sparce-bundle-fix
+time-machine-sparse-bundle-fix
 ==============================
 
 Summary:
 
-When Time Machine backs up to a NAS, it will often get corrupted and prompt a message saying, 
-“Time Machine completed a verification of your backups. To improve reliability, Time Machine must create a new backup for you.”
+When Time Machine backs up to a NAS, it will often get corrupted and prompt a message saying, “Time Machine completed a verification of your backups. To improve reliability, Time Machine must create a new backup for you.”
 
 This script fixes that issue so that Time Machine can continue using the existing backup.
 
-
-
 Instructions:
 
-  1) First mount the backup drive share so that the sparcebundle is accessible.
-  2) Make sure the script has execute permissions: chmod +x fix_time_machine.sh 
-  3) Run the script:
-     Usage - fix_time_machine.sh /Volumes/[BackupDrive]/[SparceBundle].sparsebundle/
+* First mount the backup drive share so that the sparcebundle is accessible.
+* Make sure the script has execute permissions: `chmod +x fix_time_machine.sh`
+* Run the script: `fix_time_machine.sh /Volumes/[BackupDrive]/[hostname].sparsebundle/`
 
 
 
