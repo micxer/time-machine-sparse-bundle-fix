@@ -88,3 +88,12 @@ echo 'eject the disk from your desktop if necessary, then rerun Time Machine'
 echo "If the disk can't be ejected, run:"
 echo "sudo lsof -xf +d $HFS_DISK"
 
+if [ -n "${MAIL_SERVER}" ] && [ -n "${MAIL_FROM}" ] && [ -n "${MAIL_TO}" ] && [ -n "${MAIL_USERPASS}" ] 
+then
+  curl --silent  --ssl-reqd \
+    --url "smtp://$MAIL_SERVER" \
+    --mail-from "$MAIL_FROM" \
+    --mail-rcpt "$MAIL_TO" \
+    --user "$MAIL_USERPASS" \
+    --upload-file <(echo -e "From: $MAIL_FROM\nTo: $MAIL_TO\nSubject: time-machine-sparsebundle-fix finished\nDate: $(gdate --rfc-email)\n\nFixing the sparsebundle $BUNDLE was successful!")
+fi
