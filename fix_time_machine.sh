@@ -8,33 +8,85 @@
 
 usage ()
 {
-  echo "usage: $0 PATH_TO_BUNDLE"
+  echo "usage: $0 <path_to_bundle>  or"
+  echo "usage: $0 <remote_host> <user> <password> <bundle>"
   exit
 }
 
-# a function to extract the dev disk from the hdiutil output
-extract_dev_disk ()
-{
-    HDIUTIL_OUTPUT="$1"
-	
-    # split the hdiutil output by spaces (" ") into an array.
-    DISKS_ARRAY=(${HDIUTIL_OUTPUT//" "/ })
-    for ((i = 0 ; i < ${#DISKS_ARRAY[@]}; i++));
-    do
-        # The dev disk we're looking for should have an Apple_HFS label
-        if [ "${DISKS_ARRAY[$i]}" = "Apple_HFS" ]
-            then
-                # The actual dev disk string should be just before the Apple_HFS element in the array
-                DEV_DISK=${DISKS_ARRAY[$((i-1))]}
-    fi
-    done
+VOLUME_DIR=""
+RUN_MODE_MOUNT_SCAN=1
+RUN_MODE_SCAN_ONLY=2
+RUN_MODE=$RUN_MODE_SCAN_ONLY
 
-    echo "$DEV_DISK"
+REMOTE_HOST="$1"
+REMOTE_USER="$2"
+REMOTE_PASSWORD="$3"
+REMOTE_BUNDLE="$4"
+
+function create_tm_mount ()
+{
+  if [ -z "${REMOTE_HOST}" ] || [ -z "${REMOTE_USER}" ] || [ -z "${REMOTE_PASSWORD}" ] || [ -z "${REMOTE_BUNDLE}" ]
+  then
+    usage
+    exit 1
+  fi
+
+  VOLUME_DIR=$(mktemp -d) && \
+  mount -t afp "afp://${REMOTE_USER}:${REMOTE_PASSWORD}@${REMOTE_HOST}/Time Machine" $VOLUME_DIR
+  echo "$VOLUME_DIR/$REMOTE_BUNDLE"
 }
 
-[ -e "$1" ] || usage
+# a function to extract the dev disk from the hdiutil output
+function extract_dev_disk ()
+{
+  HDIUTIL_OUTPUT="$1"
 
-BUNDLE=$1
+  # split the hdiutil output by spaces (" ") into an array.
+  DISKS_ARRAY=(${HDIUTIL_OUTPUT//" "/ })
+  for ((i = 0 ; i < ${#DISKS_ARRAY[@]}; i++));
+  do
+    # The dev disk we're looking for should have an Apple_HFS label
+    if [ "${DISKS_ARRAY[$i]}" = "Apple_HFS" ]
+      then
+        # The actual dev disk string should be just before the Apple_HFS element in the array
+        DEV_DISK=${DISKS_ARRAY[$((i-1))]}
+    fi
+  done
+
+  echo "$DEV_DISK"
+}
+
+# check for correct usage
+[ $# -eq 1 ] || [ $# -eq 4 ] || usage
+
+if [ $# -eq 4 ]
+then
+  RUN_MODE=$RUN_MODE_MOUNT_SCAN
+fi
+
+BUNDLE="$1"
+
+if [ $RUN_MODE -eq $RUN_MODE_MOUNT_SCAN ]
+then
+  BUNDLE=$(create_tm_mount)
+fi
+
+if [ ! -e "$BUNDLE" ]
+then
+  echo "File $BUNDLE doesn't exist! Exiting."
+  exit 1
+fi
+
+function cleanup_tm_mount ()
+{
+  umount "$VOLUME_DIR" && \
+  rmdir "$VOLUME_DIR"
+}
+
+if [ $RUN_MODE -eq $RUN_MODE_MOUNT_SCAN ]
+then
+  trap cleanup_tm_mount EXIT
+fi
 
 echo
 date
@@ -87,6 +139,11 @@ echo 'eject the disk from your desktop if necessary, then rerun Time Machine'
 # this command will tell you who's using the disk, if ejecting is a problem:
 echo "If the disk can't be ejected, run:"
 echo "sudo lsof -xf +d $HFS_DISK"
+
+if [ $RUN_MODE -eq $RUN_MODE_MOUNT_SCAN ]
+then
+  cleanup_tm_mount
+fi
 
 if [ -n "${MAIL_SERVER}" ] && [ -n "${MAIL_FROM}" ] && [ -n "${MAIL_TO}" ] && [ -n "${MAIL_USERPASS}" ] 
 then
