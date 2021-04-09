@@ -18,10 +18,13 @@
 usage ()
 {
      printf "%s\n" "$errmsg"
-     echo " usage: $0 size <true|false> [directory]"
+     echo "Create a sparsebundle to use with TimeMachine"
      echo
-     echo " Create a disk image with a max storage size of <size> GB and copy it"
-     echo " to your backup volume (if specified)"
+     echo "usage: $0 <size> <encrypt> [directory]"
+     echo
+     echo "  size: GB"
+     echo "  encrypt: true / false"
+     echo "  directory: Where to copy your backup volume (optional)"
 }
 
 # test if we have at least two arguments on the command line
