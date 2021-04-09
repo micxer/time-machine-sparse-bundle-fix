@@ -86,6 +86,7 @@ printf "%s" "$PASSWORD"| \
     -size "${SIZE}G" \
     -fs HFS+J \
     -type SPARSEBUNDLE \
+    -imagekey sparse-band-size=262144 \
     "${ENCRYPT_OPTIONS[@]}" \
     -volname 'Time Machine Backups' \
     "${COMPUTER_NAME}.sparsebundle" >/dev/null
