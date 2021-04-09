@@ -56,8 +56,21 @@ function extract_dev_disk ()
   echo "$DEV_DISK"
 }
 
+function check_connectivity ()
+{
+  INTERFACES="$(scutil --nwi | grep 'Network interfaces' | cut -d' ' -f3- | tr " " "|")"
+  if ! networksetup -listnetworkserviceorder | grep -E "$INTERFACES" | grep Ethernet
+  then
+    echo "No Ethernet connection found! You don't want to run this script"
+    echo "over a WiFi connection! Exiting!"
+    exit 1
+  fi
+}
+
 # check for correct usage
 [ $# -eq 1 ] || [ $# -eq 4 ] || usage
+
+check_connectivity
 
 if [ $# -eq 4 ]
 then
