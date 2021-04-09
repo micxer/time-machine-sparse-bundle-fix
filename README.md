@@ -36,7 +36,11 @@ script can do its job.
 In case you want or have to start with a new sparsebundle yo can use the
 other script which provides a more optimized sparsebundle layout.
 
-`./create_backup_bundle.sh`
+`./create_backup_bundle.sh size <encrypt> [directory]`
+
+- _size_ in GB
+- _encrypt_ `true` / `false`
+- _directory_ where to copy it after creation (optional)
 
 ## Credit
 
